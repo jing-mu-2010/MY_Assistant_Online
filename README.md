@@ -134,3 +134,8 @@
 - 预设语音：`spiffs/config_voice.wav`
 
 如需升级固件，应由开发人员重新编译并完整烧录 app、模型分区和 SPIFFS 资源。
+
+## 11. 烧录
+- esp-idf环境配置链接https://www.bilibili.com/video/BV1YiQeB7EyV?buvid=XXE5AF6EDCF1518A056E24B58FCA9E9C790E5&from_spmid=search.search-result.0.0&is_story_h5=false&mid=Fua4%2BZuQCqQc5%2FROKcgjKQ%3D%3D&plat_id=114&share_from=ugc&share_medium=android&share_plat=android&share_session_id=06825648-5904-4b64-be6b-897fa833a9b5&share_source=WEIXIN&share_tag=s_i&spmid=united.player-video-detail.0.0&timestamp=1785328451&unique_k=3hZzBIq&up_id=1458941333&vd_source=57c636f1ea583c6db267607d7447ad7b，
+- 在vscode当中build
+- 打开esp-idf终端输入命令.\flash_ai_box1.ps1 -Port COMX
