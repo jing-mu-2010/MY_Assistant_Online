@@ -1,0 +1,228 @@
+ESP32 AI BOX1 语音助手移植操作指南
+基于 MY_Assistant 项目（ESP32-S3-BOX）移植到正点原子 ESP32 AI BOX1
+版本: 1.0  |  日期: 2026-07-29  |  目标芯片: ESP32-S3
+一、项目概述与架构
+当前 MY_Assistant 项目在乐鑫 ESP32-S3-BOX 开发板上实现了完整的语音助手流水线。本指南将其移植到正点原子 ESP32 AI BOX1，并接入厂家自有 Agent 和 TTS 服务。
+数据流水线架构（原BOX vs BOX1）
+阶段
+原实现(ESP32-S3-BOX)
+移植后(AI BOX1)
+涉及文件
+唤醒词检测
+ESP-SR AFE
+保持不变
+app_sr.c
+语音录制
+I2S mic>ES7210 ADC>PSRAM
+适配BOX1 Codec
+app_audio.c
+语音识别STT
+百度 ASR HTTP API
+厂家 STT API
+stt_api.c
+对话Agent
+ChatGPT 3.5
+厂家 Agent API
+chat_api.c
+语音合成TTS
+DUI.AI(思必驰)
+厂家 TTS API
+tts_api.c
+音频播放
+I2S>ES8311 DAC>功放>喇叭
+适配BOX1 Codec
+app_audio.c
+UI显示
+LVGL on ST7789
+适配BOX1 LCD
+app_ui_ctrl.c
+二、前置准备
+2.1 硬件确认清单
+检查项
+要求
+确认方法
+芯片型号
+ESP32-S3
+查看丝印
+PSRAM
+>=8MB Octal
+idf.py monitor
+Flash
+>=16MB
+partitions.csv
+音频Codec
+确认型号(如ES8388)
+查看原理图
+麦克风
+I2S数字/ADC输入
+查看原理图
+功放/喇叭
+确认GPIO控制
+查看原理图
+LCD
+确认驱动IC
+查看数据手册
+Wi-Fi
+2.4GHz b/g/n
+ESP32-S3标配
+2.2 软件环境
+工具
+版本
+用途
+ESP-IDF
+v5.0+
+编译框架
+Python
+3.8+
+脚本工具
+esptool
+v4.x
+烧录
+idf.py
+随ESP-IDF
+构建
+厂商SDK
+最新
+Agent/TTS API
+三、分步移植操作
+步骤1: BOX1 BSP配置
+修改sdkconfig.defaults和Kconfig.projbuild,添加BOX1板卡选项。
+--- sdkconfig.defaults ----CONFIG_BSP_BOARD_ESP32_S3_BOX=y+CONFIG_BSP_BOARD_ESP32_S3_BOX=n+# CONFIG_BSP_BOARD_ESP32S3_BOX1=y
+--- main/Kconfig.projbuild ---+config BSP_BOARD_ESP32S3_BOX1+    bool "ESP32-S3 AI BOX1"+    select BSP_BOARD_NO_AUDIO_CODEC_AUTO_INIT
+步骤2: 音频驱动适配(app_audio.c)
+替换Codec初始化逻辑和句柄获取点(约6处)。
+--- app_audio.c ----#include "bsp_board.h"+#include "esp_codec_dev_defaults.h"+static esp_err_t box1_codec_init(void) {+    // I2S + Codec初始化+}+bsp_codec_config_t *box1_codec_handle(void) {+    // 替换bsp_board_get_codec_handle+}
+在app_audio.c和app_sr.c中替换所有: - bsp_board_get_codec_handle() -> + box1_codec_handle()
+步骤3: STT API替换(stt_api.c)
+百度ASR -> 厂家STT。注意URL、鉴权、响应格式差异。
+--- stt_api.c ---+#define MFG_STT_API_KEY "YOUR_KEY"+#define MFG_STT_URL "https://.../v1/asr"-char *baidu_asr(...) -> +char *mfg_speech_to_text(...)
+步骤4: Agent API替换(chat_api.c)
+ChatGPT -> 厂家Agent。若兼容OpenAI格式则仅改URL和Key。
+--- chat_api.c ----const char *url = "https://api.chatanywhere.com.cn/..."+const char *url = "https://.../v1/agent/chat"-const char *apiKey = "Bearer YOUR_KEY"+const char *apiKey = "Bearer YOUR_MFG_KEY"
+步骤5: TTS API替换(tts_api.c)
+DUI.AI -> 厂家TTS。HTTP GET改POST,JSON请求体。
+--- tts_api.c ---+#define MFG_TTS_API_KEY "YOUR_KEY"-esp_http_client_set_method(client, HTTP_METHOD_GET);+esp_http_client_set_method(client, HTTP_METHOD_POST);+// 添加JSON body: text, format等字段
+步骤6: 主流程修改(main.c)
+替换函数调用名和BSP初始化。
+--- main.c ----baidu_asr(audio, audio_len)+mfg_speech_to_text(audio, audio_len)-getGPTAnswer(recognition_result)+mfg_agent_chat(recognition_result)-bsp_board_init()+box1_board_init()
+步骤7: 头文件更新
+stt_api.h, chat_api.h, app_audio.h中更新函数声明。
+--- stt_api.h ----char *baidu_asr(...)+char *mfg_speech_to_text(...)--- chat_api.h ----char *getGPTAnswer(...)+char *mfg_agent_chat(...)
+四、编译与烧录
+编译
+cd <project_root>idf.py set-target esp32s3idf.py fullcleanidf.py build
+烧录
+idf.py -p <COM_PORT> flash monitor
+五、验证检查清单
+#
+验证项
+预期结果
+1
+系统启动
+串口输出启动日志,无异常
+2
+Wi-Fi连接
+获取IP地址成功
+3
+LCD显示
+LVGL UI正常渲染
+4
+唤醒词检测
+说出唤醒词后进入录音状态
+5
+语音录制
+PSRAM缓冲区正确填充音频数据
+6
+STT识别
+云端返回正确文字结果
+7
+Agent对话
+API返回有意义的回复
+8
+TTS合成
+API返回有效音频流
+9
+喇叭播放
+扬声器输出清晰语音
+10
+端到端
+唤醒>提问>回答>播放全链路通
+六、常见问题排查
+问题
+原因
+解决方案
+编译报错codec相关
+缺少BOX1 Codec驱动
+检查esp_codec_dev组件
+I2S初始化失败
+GPIO引脚冲突
+对照原理图核对I2S引脚
+麦克风无输入
+ADC通道未初始化
+确认Codec数据手册
+喇叭无声
+功放使能引脚未拉高
+GPIO控制shutdown引脚
+HTTP请求超时
+Wi-Fi未连接
+先检查wifi状态
+TTS音频杂音
+采样率不匹配
+I2S时钟与TTS格式一致
+PSRAM分配失败
+PSRAM未初始化
+检查sdkconfig SPIRAM配置
+七、附录: 代码修改汇总
+优先级
+文件
+修改类型
+说明
+P0必须
+sdkconfig.defaults
+配置修改
+切换目标板为BOX1
+P0必须
+main/Kconfig.projbuild
+新增
+添加BOX1板卡选项
+P0必须
+main/app/app_audio.c
+重写核心
+Codec驱动适配
+P0必须
+main/main.c
+修改
+BSP初始化+函数名替换
+P1重要
+main/WebAPI/stt_api.c
+重写核心
+替换为厂家STT API
+P1重要
+main/WebAPI/stt_api.h
+修改
+更新函数声明
+P1重要
+main/WebAPI/chat_api.c
+修改
+替换为厂家Agent API
+P1重要
+main/WebAPI/chat_api.h
+修改
+更新函数声明
+P1重要
+main/WebAPI/tts_api.c
+修改
+替换为厂家TTS API
+P2建议
+main/app/app_audio.h
+新增
+BOX1专用函数声明
+P2建议
+main/app/app_sr.c
+微调
+替换codec_handle获取
+P3可选
+main/app/app_ui_ctrl.c
+适配
+LCD驱动调整
+说明: 代码补丁使用diff格式。实际应用前根据BOX1原理图和厂家API文档调整占位符(YOUR_MFG_*等)。

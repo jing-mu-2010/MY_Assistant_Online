@@ -1,0 +1,171 @@
+dependencies:
+  button:
+    dependencies:
+    - name: cmake_utilities
+      override_path: ../espressif__cmake_utilities
+      version: 0.*
+    - name: idf
+      version: '>=4.0'
+    source:
+      path: D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main\components\espressif__button
+      type: local
+    version: 2.5.6
+  chmorgan/esp-audio-player:
+    dependencies: []
+    source:
+      path: D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main\components\chmorgan__esp-audio-player
+      type: local
+    version: 1.0.4
+  chmorgan/esp-file-iterator:
+    component_hash: 327091394b9ef5c2cd395a960ab70ae64479e0a8831cbd9925e38895fad93719
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.1.0'
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 1.0.0
+  chmorgan/esp-libhelix-mp3:
+    dependencies:
+    - name: idf
+      version: '>=4.1.0'
+    source:
+      path: D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main\components\esp-libhelix-mp3
+      type: local
+    version: 1.0.3
+  cmake_utilities:
+    dependencies:
+    - name: idf
+      version: '>=4.1'
+    source:
+      path: D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main\components\espressif__cmake_utilities
+      type: local
+    version: 0.5.3
+  esp_codec_dev:
+    dependencies:
+    - name: idf
+      version: '>=4.0'
+    source:
+      path: D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main\components\espressif__esp_codec_dev
+      type: local
+    version: 1.1.0
+  esp_lcd_touch:
+    dependencies:
+    - name: idf
+      version: '>=4.4.2'
+    source:
+      path: D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main\components\espressif__esp_lcd_touch
+      type: local
+    version: 1.2.1
+  esp_lcd_touch_tt21100:
+    dependencies:
+    - name: esp_lcd_touch
+      override_path: ../espressif__esp_lcd_touch
+      public: true
+      version: ^1.2.0
+    - name: idf
+      version: '>=5.2'
+    source:
+      path: D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main\components\espressif__esp_lcd_touch_tt21100
+      type: local
+    version: 1.2.0~2
+  espressif/cmake_utilities:
+    dependencies: []
+    source:
+      path: D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main\components\espressif__cmake_utilities
+      type: local
+    version: 0.5.3
+  espressif/esp-box:
+    dependencies: []
+    source:
+      path: D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main\components\espressif__esp-box
+      type: local
+    version: 3.1.0~2
+  espressif/esp-dsp:
+    component_hash: ed9ac175b14e0414399a2b33c525579414b5bad19a2a67b12ea212def96f9a98
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.2'
+    source:
+      registry_url: https://components.espressif.com
+      type: service
+    version: 1.8.2
+  espressif/esp-sr:
+    component_hash: a2fa6906d7045785abe6ce65d4c267b0e6c96e9ff2d549f8a44e375a5eb66486
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.4'
+    - name: espressif/esp-dsp
+      registry_url: https://components.espressif.com
+      require: private
+      version: ^1.2.1
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    targets:
+    - esp32
+    - esp32s2
+    - esp32s3
+    - esp32c3
+    version: 1.3.3
+  espressif/esp_lvgl_port:
+    dependencies: []
+    source:
+      path: D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main\components\espressif__esp_lvgl_port
+      type: local
+    version: 1.4.0
+  espressif/openai:
+    component_hash: 0a57449b7a6622d6558c0f35fa4b3ec5196d0795aa50f167017629240901551c
+    dependencies:
+    - name: idf
+      require: private
+      version: '>=4.4.0'
+    - name: espressif/cmake_utilities
+      registry_url: https://components.espressif.com
+      require: private
+      version: 0.*
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 0.1.2
+  icm42670:
+    dependencies:
+    - name: idf
+      version: '>=4.4'
+    source:
+      path: D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main\components\espressif__icm42670
+      type: local
+    version: 1.0.0
+  idf:
+    source:
+      type: idf
+    version: 5.2.7
+  lvgl/lvgl:
+    component_hash: 948bff879a345149b83065535bbc4a026ce9f47498a22881e432a264b9098015
+    dependencies: []
+    source:
+      registry_url: https://components.espressif.com/
+      type: service
+    version: 8.3.11
+direct_dependencies:
+- button
+- chmorgan/esp-audio-player
+- chmorgan/esp-file-iterator
+- chmorgan/esp-libhelix-mp3
+- cmake_utilities
+- esp_codec_dev
+- esp_lcd_touch
+- esp_lcd_touch_tt21100
+- espressif/esp-box
+- espressif/esp-sr
+- espressif/esp_lvgl_port
+- espressif/openai
+- icm42670
+- idf
+- lvgl/lvgl
+manifest_hash: 028de85f6b709ee5028f4592012c4965e8c43154742d5c533aa78664cadc0a76
+target: esp32s3
+version: 2.0.0

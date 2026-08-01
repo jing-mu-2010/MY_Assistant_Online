@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESP32 AI BOX1 — API 语音互动测试</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #1a1a2e; color: #eee; min-height: 100vh; display: flex; justify-content: center; align-items: center; }
+  .container { width: 100%; max-width: 600px; padding: 20px; }
+  h1 { text-align: center; margin-bottom: 20px; font-size: 1.4em; color: #00d4ff; }
+  .card { background: #16213e; border-radius: 12px; padding: 20px; margin-bottom: 16px; }
+  label { display: block; margin-bottom: 6px; font-size: 0.85em; color: #888; }
+  input, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #333; background: #0f3460; color: #fff; font-size: 0.95em; }
+  .row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .row > * { flex: 1; min-width: 140px; }
+  .btn { padding: 12px 24px; border-radius: 8px; border: none; cursor: pointer; font-size: 1em; font-weight: 600; transition: all 0.2s; }
+  .btn-primary { background: #00d4ff; color: #000; }
+  .btn-primary:hover { background: #00b8e6; }
+  .btn-danger { background: #e74c3c; color: #fff; }
+  .btn-danger:hover { background: #c0392b; }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .status { padding: 8px 12px; border-radius: 6px; margin: 10px 0; font-size: 0.9em; }
+  .status-listening { background: #27ae60; }
+  .status-thinking { background: #f39c12; color: #000; }
+  .status-speaking { background: #2980b9; }
+  .status-idle { background: #333; }
+  .bubble { padding: 14px 18px; border-radius: 12px; margin: 8px 0; max-width: 85%; line-height: 1.6; }
+  .bubble-user { background: #00d4ff; color: #000; margin-left: auto; text-align: right; }
+  .bubble-assistant { background: #333; }
+  .log { max-height: 300px; overflow-y: auto; }
+  .stats { display: flex; gap: 20px; font-size: 0.85em; color: #888; margin-top: 10px; }
+  .stats span { color: #00d4ff; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>AI BOX1 API 语音互动测试</h1>
+
+  <div class="card">
+    <label>API Key（阿里云百炼）</label>
+    <input type="password" id="apiKey" placeholder="sk-xxxxxxxxxxxxxxxxxxxxxxxx">
+  </div>
+
+  <div class="card">
+    <div class="row">
+      <div><label>模型</label><input type="text" id="model" value="qwen3.7-max"></div>
+      <div><label>API 地址</label><input type="text" id="apiUrl" value="https://ws-w456lmthuttpug1v.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions"></div>
+    </div>
+  </div>
+
+  <div class="card" style="text-align:center">
+    <div id="statusBox" class="status status-idle">准备就绪 — 点击下方按钮开始说话</div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-primary" id="btnStart" onclick="startListening()">开始说话</button>
+      <button class="btn btn-danger" id="btnStop" onclick="stopAll()" disabled>停止</button>
+    </div>
+    <div class="stats">
+      <div>总轮次: <span id="statRounds">0</span></div>
+      <div>平均延迟: <span id="statLatency">--</span></div>
+    </div>
+  </div>
+
+  <div class="card log" id="chatLog">
+    <div style="color:#666;text-align:center;padding:20px;">对话记录将显示在这里</div>
+  </div>
+</div>
+
+<script>
+const SYSTEM_PROMPT = "你是一个运行在智能硬件上的语音助手。你的回复将直接通过语音合成(TTS)播放给用户，因此请绝对不要使用任何 Markdown 格式（如星号、井号、反引号等），不要包含代码块，不要包含 URL 链接。请只输出口语化、纯文本、适合直接朗读的内容。每次回答请尽量精简，控制在200字以内。";
+
+let messages = [{ role: "system", content: SYSTEM_PROMPT }];
+let recognition = null;
+let synth = window.speechSynthesis;
+let totalLatency = 0, roundCount = 0;
+
+if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+  document.getElementById('statusBox').textContent = '浏览器不支持语音识别，请使用 Chrome 或 Edge';
+  document.getElementById('btnStart').disabled = true;
+}
+
+document.getElementById('apiKey').value = localStorage.getItem('ai_box_api_key') || '';
+document.getElementById('apiKey').addEventListener('input', function() {
+  localStorage.setItem('ai_box_api_key', this.value);
+});
+
+function updateStatus(text, cls) {
+  const box = document.getElementById('statusBox');
+  box.textContent = text;
+  box.className = 'status ' + cls;
+}
+
+function addBubble(text, role) {
+  const log = document.getElementById('chatLog');
+  const div = document.createElement('div');
+  div.className = 'bubble bubble-' + role;
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+function startListening() {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  if (!apiKey) { alert('请先填入 API Key'); return; }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) { alert('浏览器不支持语音识别'); return; }
+
+  recognition = new SpeechRecognition();
+  recognition.lang = 'zh-CN';
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+  recognition.continuous = false;
+
+  document.getElementById('btnStart').disabled = true;
+  document.getElementById('btnStop').disabled = false;
+  updateStatus('正在听...', 'status-listening');
+
+  recognition.onresult = async function(event) {
+    const text = event.results[0][0].transcript.trim();
+    if (!text) { updateStatus('未识别到语音，请重试', 'status-idle'); resetBtns(); return; }
+    
+    addBubble(text, 'user');
+    updateStatus('思考中...', 'status-thinking');
+    const startTime = Date.now();
+
+    try {
+      const reply = await chatWithAgent(text);
+      const latency = Date.now() - startTime;
+      totalLatency += latency;
+      roundCount++;
+      document.getElementById('statRounds').textContent = roundCount;
+      document.getElementById('statLatency').textContent = (totalLatency / roundCount / 1000).toFixed(1) + 's';
+
+      addBubble(reply, 'assistant');
+      updateStatus('正在朗读...', 'status-speaking');
+      speakText(reply, () => {
+        updateStatus('准备就绪', 'status-idle');
+        resetBtns();
+      });
+    } catch (err) {
+      addBubble('错误: ' + err.message, 'assistant');
+      updateStatus('出错了，请重试', 'status-idle');
+      resetBtns();
+    }
+  };
+
+  recognition.onerror = function(event) {
+    updateStatus('识别错误: ' + event.error, 'status-idle');
+    resetBtns();
+  };
+
+  recognition.start();
+}
+
+function resetBtns() {
+  document.getElementById('btnStart').disabled = false;
+  document.getElementById('btnStop').disabled = true;
+}
+
+function stopAll() {
+  if (recognition) { recognition.abort(); recognition = null; }
+  if (synth) { synth.cancel(); }
+  updateStatus('已停止', 'status-idle');
+  resetBtns();
+}
+
+async function chatWithAgent(userText) {
+  const apiKey = document.getElementById('apiKey').value.trim();
+  const apiUrl = document.getElementById('apiUrl').value.trim();
+  const model = document.getElementById('model').value.trim();
+
+  messages.push({ role: "user", content: userText });
+  if (messages.length > 21) { messages.splice(1, messages.length - 21); }
+
+  const resp = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + apiKey,
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: messages,
+      temperature: 1,
+      presence_penalty: 0,
+      frequency_penalty: 0,
+    }),
+  });
+
+  if (!resp.ok) {
+    const errText = await resp.text();
+    throw new Error('API 错误 ' + resp.status + ': ' + errText.substring(0, 200));
+  }
+
+  const data = await resp.json();
+  const reply = data.choices[0].message.content;
+  messages.push({ role: "assistant", content: reply });
+  return reply;
+}
+
+function speakText(text, onEnd) {
+  if (!synth) { onEnd(); return; }
+  synth.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.lang = 'zh-CN';
+  utter.rate = 1.0;
+  utter.onend = onEnd;
+  utter.onerror = onEnd;
+  const voices = synth.getVoices();
+  const zhVoice = voices.find(v => v.lang.startsWith('zh')) || voices[0];
+  if (zhVoice) utter.voice = zhVoice;
+  synth.speak(utter);
+}
+</script>
+</body>
+</html>

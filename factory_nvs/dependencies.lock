@@ -1,0 +1,81 @@
+dependencies:
+  chmorgan__esp-libhelix-mp3:
+    component_hash: null
+    source:
+      path: D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main\components\chmorgan__esp-libhelix-mp3
+      type: local
+    version: 1.0.3
+  espressif/button:
+    component_hash: e162e6c8fc670ae297dca5ec75037966c1d69a1509f0b2048a883a7c54fb7aba
+    source:
+      storage_url: https://components-file.espressif.cn
+      type: service
+    version: 2.5.6
+  espressif/cmake_utilities:
+    component_hash: 351350613ceafba240b761b4ea991e0f231ac7a9f59a9ee901f751bddc0bb18f
+    source:
+      storage_url: https://components-file.espressif.cn
+      type: service
+    version: 0.5.3
+  espressif/esp_codec_dev:
+    component_hash: 1a3a2e518cd8b52e8796ec393a4050977f8f113599056faf085a02a57e194f86
+    source:
+      storage_url: https://components-file.espressif.cn
+      type: service
+    version: 1.1.0
+  espressif/esp_lcd_touch:
+    component_hash: 3f85a7d95af876f1a6ecca8eb90a81614890d0f03a038390804e5a77e2caf862
+    source:
+      storage_url: https://components-file.espressif.cn
+      type: service
+    version: 1.2.1
+  espressif/esp_lcd_touch_tt21100:
+    component_hash: 09684e9e88e0a5dd697fc48dca6fc253083a97c6b7d501500fabd270cc4af7bb
+    source:
+      storage_url: https://components-file.espressif.cn
+      type: service
+    version: 1.2.0~2
+  espressif/esp_tinyuf2:
+    component_hash: ab77ed6761d2c041760e8372614415d8752eb107a758d03258ea1c3b74576cab
+    source:
+      storage_url: https://components-file.espressif.cn
+      type: service
+    version: 0.1.0
+  espressif/icm42670:
+    component_hash: 3327870e7a125e7278f318297726138278f0cda2898f2461c01af0423d4afcda
+    source:
+      storage_url: https://components-file.espressif.cn
+      type: service
+    version: 1.0.0
+  espressif__esp_lvgl_port:
+    component_hash: null
+    source:
+      path: D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main\components\espressif__esp_lvgl_port
+      type: local
+    version: 1.4.0
+  idf:
+    component_hash: null
+    source:
+      type: idf
+    version: 5.2.1
+  leeebo/esp-inih:
+    component_hash: a2ecd9643d4cf7b3592645579d6ecf0f5c4f07f8ca8f9bafeb1d0f89fd005f38
+    source:
+      storage_url: https://components-file.espressif.cn
+      type: service
+    version: 0.0.2
+  leeebo/tinyusb_src:
+    component_hash: 7fb4761ab2f7ff9f53acc78765f9b7df76b43ec20e368e976bd60296346cc780
+    source:
+      storage_url: https://components-file.espressif.cn
+      type: service
+    version: 0.0.4
+  lvgl/lvgl:
+    component_hash: d7c1ac037ae6e85d94897f807d6e7ba0946a83e720074fc95a4f6241da9f9f53
+    source:
+      storage_url: https://components-file.espressif.cn
+      type: service
+    version: 8.4.0
+manifest_hash: ee55c3d8724b6adbf64d26a55192118f221a949a4e5db20eec1fdf3885e443a3
+target: esp32s3
+version: 1.0.0
