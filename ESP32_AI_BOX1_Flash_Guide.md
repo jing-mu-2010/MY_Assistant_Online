@@ -512,7 +512,7 @@ idf.py -p COM5 monitor
 
 -  运行方法：
    cd D:\BaiduNetdiskDownload\ESP32_AI_BOX1\MY_Assistant-main
-   $env:MFG_AGENT_API_KEY="sk-ws-H.REHEYHX.ZLzg.MEUCIQDlCoqtuTDXTjdRc4LBFQdavzziswvx9cZ6sYhZAcsHGgIgLZjliaCzNhHra5rWja_Rd9Tid0Hdz5pgnn3S2v_Kja8"
+   $env:MFG_AGENT_API_KEY="sk-xxxxxxxx"
    python .\tools\pc_voice_agent_web.py
 - 看到提示后，用 Microsoft Edge 或 Chrome 打开：
   http://127.0.0.1:8765/

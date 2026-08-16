@@ -13,7 +13,7 @@ static const char *TAG = "chat_api";
 static const char *url = "https://ws-w456lmthuttpug1v.cn-beijing.maas.aliyuncs.com/compatible-mode/v1/chat/completions";
 static const char *model = "qwen3.6-flash";
 
-#define CHAT_API_KEY "sk-ws-H.REHEYHX.ZLzg.MEUCIQDlCoqtuTDXTjdRc4LBFQdavzziswvx9cZ6sYhZAcsHGgIgLZjliaCzNhHra5rWja_Rd9Tid0Hdz5pgnn3S2v_Kja8"
+#define CHAT_API_KEY "你的真实key"
 
 #define CHAT_RESPONSE_SIZE (4096 * 2)
 #define MAX_CHAT_HISTORY 20

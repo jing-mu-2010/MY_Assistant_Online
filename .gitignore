@@ -1,3 +1,16 @@
 squareline/cache
 squareline/backup
 chat_gpt_events.py
+
+# 构建产物
+build/
+factory_nvs/build/
+
+# 自动下载的组件（idf.py 会根据 idf_component.yml 重新拉取）
+managed_components/
+factory_nvs/managed_components/
+
+# 本机工具与编辑器配置
+.reasonix/
+.claude/
+.vscode/
