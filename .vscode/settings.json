@@ -2,5 +2,11 @@
   "idf.currentSetup": "D:\\esp\\v5.2.7\\esp-idf",
   "idf.customExtraVars": {},
   "idf.portWin": "COM3",
-  "idf.flashType": "UART"
+  "idf.flashType": "UART",
+  "clangd.path": "C:\\Espressif\\tools\\esp-clang\\16.0.1-fe4f10a809\\esp-clang\\bin\\clangd.exe",
+  "clangd.arguments": [
+    "--background-index",
+    "--query-driver=**",
+    "--compile-commands-dir=d:\\Users\\24780\\Desktop\\MY_Assistant_Voice_814 - 副本\\build"
+  ]
 }
